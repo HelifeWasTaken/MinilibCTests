@@ -30,6 +30,7 @@
 void *handler = NULL;
 size_t (*my_strlen)(char const *) = NULL;
 size_t (*my_memcpy)(void *, const void *, size_t) = NULL;
+size_t (*my_strcmp)(const char *s1, const char *s2) = NULL;
 
 void unload_library(void)
 {
@@ -45,6 +46,7 @@ void load_library(void)
     NOT_NULL(handler);
     LOAD_SYM(my_strlen, "strlen");
     LOAD_SYM(my_memcpy, "memcpy");
+    LOAD_SYM(my_strcmp, "strcmp");
 }
 
 void assert_strlen(char const *test)
@@ -72,7 +74,24 @@ void assert_memcpy(void *right, size_t size, size_t size_to_test)
     printf("=============\n\n");
 }
 
+void assert_strcmp(const char *s1, const char *s2)
+{
+    printf("=============\n");
+    printf("\tTesting:  [%s, %s]\n", s1, s2);
+    printf("\tGot:      [%d]\n", my_strcmp(s1, s2));
+    printf("\tExpected: [%d]\n", strcmp(s1, s2));
+    printf("=============\n\n");
+}
+
 /* tests */
+
+void tests_strcmp(void)
+{
+    assert_strcmp("hello world", "hello world");
+    assert_strcmp("hello worl", "hello world");
+    assert_strcmp("hello world", "hello worl");
+    assert_strcmp("hello world", "hello");
+}
 
 void tests_strlen(void)
 {
@@ -94,6 +113,7 @@ void run_tests()
 {
     RUN_TEST_SUITE(tests_strlen, "strlen");
     RUN_TEST_SUITE(tests_memcpy, "memcpy");
+    RUN_TEST_SUITE(tests_strcmp, "strcmp");
 }
 
 int main(void)
