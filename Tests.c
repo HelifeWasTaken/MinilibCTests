@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include <dlfcn.h>
 #include <assert.h>
+#include <unistd.h>
 
 #define NOT_NULL(v) (assert((v) != NULL))
 #define LOAD_SYM(sym, symname) \
@@ -65,7 +66,9 @@ void assert_memcpy(void *right, size_t size, size_t size_to_test)
     printf("=============\n");
     printf("\tTesting:  [(%p), (%lu), (%lu)]\n", right, size, size_to_test);
     printf("\tGot:      [%d]\n", memcmp(buf1, right, size_to_test));
+    printf("\t   ->:    ["); write(1, buf1, size_to_test); printf("]\n");
     printf("\tExpected: [%d]\n", memcmp(buf2, right, size_to_test));
+    printf("\t   ->:    ["); write(1, buf2, size_to_test); printf("]\n");
     printf("=============\n\n");
 }
 
@@ -95,6 +98,7 @@ void run_tests()
 
 int main(void)
 {
+    setvbuf(stdout, NULL, _IONBF, 0);
     load_library();
     run_tests();
     unload_library();
