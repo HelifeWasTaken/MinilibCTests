@@ -34,8 +34,8 @@ Setups
 void signal_handler(int signum)
 {
     printf("Got: (%d) -> a Fatal Error occured\n", signum);
-    printf("If you see this message and think this is not due to your code,"
-           "please report it to mattis.dalleau@epitech.eu"
+    printf("If you see this message and think this is not due to your code, "
+           "please report it to [mattis.dalleau@epitech.eu] "
            "or a maintainer of the repository\n");
     exit(signum);
 }
