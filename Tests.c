@@ -263,39 +263,7 @@ void assert_memmove(size_t size, size_t offset1, size_t offset2)
         buf3[i] = c;
         buf4[i] = c;
     }
-
-    printf("=============\n");
-    printf("\tTesting:  [(%p), (%lu), (%lu), (%lu)]\n", buf1, size, offset1, offset2);
-    my_memmove(buf1, buf1 + offset1, size);
-    memmove(buf2, buf2 + offset2, size);
-    int res1 = memcmp(buf1, buf2, 100);
-    if (res1 != 0) {
-        printf("\tGot:      [%d]\n", memcmp(buf1, buf2, size_array));
-        printf("\t   ->:    ["); write(1, buf1, size_array); printf("]\n");
-        printf("\tExpected: [%d]\n", 0);
-        printf("\t   ->:    ["); write(1, buf2, size_array); printf("]\n");
-        failure++;
-    } else {
-        success++;
-    }
-    printf("=============\n");
-    printf("=============\n");
-    printf("\tTesting: [(%p), (%lu), (%lu), (%lu)]\n", buf3, size, offset1, offset2);
-
-    my_memmove(buf3, buf1 + offset2, size);
-    memmove(buf4, buf2 + offset2, size);
-
-    int res2 = memcmp(buf3, buf4, size_array);
-    if (res2 != 0) {
-        printf("\tGot:      [%d]\n", memcmp(buf3, buf4, size_array));
-        printf("\t   ->:    ["); write(1, buf3, size_array); printf("]\n");
-        printf("\tExpected: [%d]\n", 0);
-        printf("\t   ->:    ["); write(1, buf4, size_array); printf("]\n");
-        failure++;
-    } else {
-        success++;
-    }
-    printf("=============\n\n");
+    printf("Not implemented test yet\n");
     free(buf1);
     free(buf2);
     free(buf3);
@@ -563,7 +531,7 @@ void run_tests()
     RUN_TEST_SUITE(tests_memset, "memset");
     RUN_TEST_SUITE(tests_memcpy, "memcpy");
     RUN_TEST_SUITE(tests_strcmp, "strcmp");
-    RUN_TEST_SUITE(tests_memmove, "memmove");     
+    RUN_TEST_SUITE(tests_memmove, "memmove");
     RUN_TEST_SUITE(tests_strncmp, "strncmp");
     RUN_TEST_SUITE(tests_strcasecmp, "strcasecmp");
     RUN_TEST_SUITE(tests_strstr, "strstr");
