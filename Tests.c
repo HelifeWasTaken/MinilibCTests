@@ -280,7 +280,7 @@ void assert_memmove(size_t size, size_t offset1, size_t offset2)
     }
     printf("=============\n");
     printf("=============\n");
-    printf("\t Testing: [(%p), (%lu), (%lu), (%lu)]\n", buf3, size, offset1, offset2);
+    printf("\tTesting: [(%p), (%lu), (%lu), (%lu)]\n", buf3, size, offset1, offset2);
 
     my_memmove(buf3, buf1 + offset2, size);
     memmove(buf4, buf2 + offset2, size);
