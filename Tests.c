@@ -48,11 +48,12 @@ void signal_handler(int signum)
     }
 
 #define RUN_TEST_SUITE(f, suite_name) \
-    { \
-        printf("-------------- " \
-               "Running test suite for: [%s]\n\n", suite_name); \
+    do { \
+        printf("|------------|" \
+               " Running test suite for: [%s] " \
+               "|------------|\n\n", suite_name); \
         f(); \
-    }
+    } while (0)
 
 #define TEST_HEADER \
     { \
@@ -85,7 +86,8 @@ void setup()
     srand(42);
     printf("--> Setting up signal handler...\n");
     for (int i = 0; i < 32; i++)
-        signal(i, signal_handler);
+        if (i != SIGINT)
+            signal(i, signal_handler);
 }
 
 void unload_library(void)
@@ -110,6 +112,7 @@ void load_library(void)
     LOAD_SYM(my_strstr, "strstr");
     LOAD_SYM(my_strpbrk, "strpbrk");
     LOAD_SYM(my_strcspn, "strcspn");
+    puts("");
 }
 
 void show_score()
@@ -245,12 +248,13 @@ void assert_strcmp(const char *s1, const char *s2)
 
 void assert_memmove(size_t size, size_t offset1, size_t offset2)
 {
-    char buf1[100] = {0};
-    char buf2[100] = {0};
-    char buf3[100] = {0};
-    char buf4[100] = {0};
+    size_t size_array = size + offset1 + offset2;
+    char *buf1 = calloc(size_array, sizeof(char));
+    char *buf2 = calloc(size_array, sizeof(char));
+    char *buf3 = calloc(size_array, sizeof(char));
+    char *buf4 = calloc(size_array, sizeof(char));
 
-    for (size_t i = 0; i < BUFSIZ; i++) {
+    for (size_t i = 0; i < size_array; i++) {
         char visible[] = {'a', 'b', 'c', 'd', 'e'};
         int c = visible[i % sizeof(visible)];
         buf1[i] = c;
@@ -259,14 +263,11 @@ void assert_memmove(size_t size, size_t offset1, size_t offset2)
         buf3[i] = c;
         buf4[i] = c;
     }
-    my_memmove(buf1, buf1 + offset1, size);
-    memmove(buf2, buf2 + offset2, size);
-
-    my_memmove(buf3, buf1 + offset2, size);
-    memmove(buf4, buf2 + offset2, size);
 
     printf("=============\n");
     printf("\tTesting:  [(%p), (%lu), (%lu), (%lu)]\n", buf1, size, offset1, offset2);
+    my_memmove(buf1, buf1 + offset1, size);
+    memmove(buf2, buf2 + offset2, size);
     int res1 = memcmp(buf1, buf2, 100);
     if (res1 != 0) {
         printf("\tGot:      [%d]\n", memcmp(buf1, buf2, 100));
@@ -280,6 +281,10 @@ void assert_memmove(size_t size, size_t offset1, size_t offset2)
     printf("=============\n");
     printf("=============\n");
     printf("\t Testing: [(%p), (%lu), (%lu), (%lu)]\n", buf3, size, offset1, offset2);
+
+    my_memmove(buf3, buf1 + offset2, size);
+    memmove(buf4, buf2 + offset2, size);
+
     int res2 = memcmp(buf3, buf4, 100);
     if (res2 != 0) {
         printf("\tGot:      [%d]\n", memcmp(buf3, buf4, 100));
@@ -291,6 +296,10 @@ void assert_memmove(size_t size, size_t offset1, size_t offset2)
         success++;
     }
     printf("=============\n\n");
+    free(buf1);
+    free(buf2);
+    free(buf3);
+    free(buf4);
 }
 
 void assert_strncmp(const char *s1, const char *s2, size_t n)
@@ -554,8 +563,12 @@ void run_tests()
     RUN_TEST_SUITE(tests_memset, "memset");
     RUN_TEST_SUITE(tests_memcpy, "memcpy");
     RUN_TEST_SUITE(tests_strcmp, "strcmp");
-    RUN_TEST_SUITE(tests_memmove, "memmove");
+    RUN_TEST_SUITE(tests_memmove, "memmove");     
     RUN_TEST_SUITE(tests_strncmp, "strncmp");
+    RUN_TEST_SUITE(tests_strcasecmp, "strcasecmp");
+    RUN_TEST_SUITE(tests_strstr, "strstr");
+    RUN_TEST_SUITE(tests_strpbrk, "strpbrk");
+    RUN_TEST_SUITE(tests_strcspn, "strcspn");
 }
 
 int main(void)
