@@ -19,6 +19,81 @@ Run all tests in the project
 ```
 Run all the tests specifically for strncmp and strcmp
 
+## Example Output
+```
+~~~~~~~~
+        TEST ASM B-400
+~~~~~~~~
+
+--> Setting up tests...
+--> Setting up printf automatic flush...
+--> Setting up random seed to 42...
+--> Setting up signal handler...
+
+
+--> Loading library [./libasm.so]
+---- Loading library symbol: [strlen]
+---- Loading library symbol: [strchr]
+---- Loading library symbol: [strrchr]
+---- Loading library symbol: [memcpy]
+---- Loading library symbol: [memset]
+---- Loading library symbol: [strcmp]
+---- Loading library symbol: [memmove]
+---- Loading library symbol: [strncmp]
+---- Loading library symbol: [strcasecmp]
+---- Loading library symbol: [strstr]
+---- Loading library symbol: [strpbrk]
+---- Loading library symbol: [strcspn]
+
+------------| Running test suite for: [strlen] |------------|
+
+=============
+        Testing:  [(hello)]
+=============
+
+=============
+        Testing:  [(he)]
+=============
+
+=============
+        Testing:  [(h)]
+=============
+
+=============
+        Testing:  [()]
+=============
+
+|------------| Running test suite for: [memmove] |------------|
+
+=============
+        Testing:  [(0x2362c80), (10), (0), (0)]
+        Got:      [0]
+           ->:    [abcdeabcde]
+        Expected: [0]
+           ->:    [abcdeabcde]
+=============
+=============
+         Testing: [(0x2362cc0), (10), (0), (0)]
+=============
+
+=============
+        Testing:  [(0x2362d00), (10), (0), (1)]
+        Got:      [-1]
+           ->:    [abcdeabcdea]
+        Expected: [0]
+           ->:    [bcdeabcdeaa]
+=============
+=============
+         Testing: [(0x2362d40), (10), (0), (1)]
+        Got:      [-2]
+           ->:    [abcdeabcdea]
+        Expected: [0]
+           ->:    [cdeabcdeaaa]
+=============
+```
+
+If the test fails it shows information about `Got` and `Expected` fields
+
 ## Writing tests
 
 If the function is not added in the `load_library` create a global variable containing the function pointer inside of it and you the macro `LOAD_SYM()` to load the function inside it
