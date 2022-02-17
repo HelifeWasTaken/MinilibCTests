@@ -1,14 +1,46 @@
+/**
+ * Tests.c
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <stdio.h>
 #include <string.h>
 #include <stddef.h>
 #include <dlfcn.h>
 #include <assert.h>
 #include <unistd.h>
+#include <stdlib.h>
+#include <signal.h>
+
+/*
+Setups
+*/
+
+// Catch SIGSEGV and SIGBUS etc...
+void signal_handler(int signum)
+{
+    printf("Got: (%d) -> a Fatal Error occured\n", signum);
+    printf("If you see this message and think this is not due to your code,"
+           "please report it to mattis.dalleau@epitech.eu"
+           "or a maintainer of the repository\n");
+    exit(signum);
+}
 
 #define NOT_NULL(v) (assert((v) != NULL))
 #define LOAD_SYM(sym, symname) \
     { \
-        printf("Loading library symbol: [%s]\n", symname); \
+        printf("---- Loading library symbol: [%s]\n", symname); \
         NOT_NULL(sym = dlsym(handler, symname)); \
     }
 
@@ -17,38 +49,52 @@
         printf("-------------- " \
                "Running test suite for: [%s]\n\n", suite_name); \
         f(); \
-        printf("--------------\n"); \
     }
 
 #define TEST_HEADER \
     { \
         printf("\n~~~~~~~~\n"); \
         printf("\tTEST ASM B-400\n"); \
-        printf("~~~~~~~~\n"); \
+        printf("~~~~~~~~\n\n"); \
     } \
 
 void *handler = NULL;
 size_t (*my_strlen)(char const *) = NULL;
-char *(*my_strchr)(char const *s, int c) = NULL;
-char *(*my_strrchr)(char const *s, int c) = NULL;
-void *(*my_memset)(void *s, int c, size_t n) = NULL;
+char *(*my_strchr)(char const *, int) = NULL;
+char *(*my_strrchr)(char const *, int) = NULL;
+void *(*my_memset)(void *, int, size_t) = NULL;
 size_t (*my_memcpy)(void *, const void *, size_t) = NULL;
-int (*my_strcmp)(const char *s1, const char *s2) = NULL;
-void *(*my_memmove)(void *dest, const void *src, size_t n) = NULL;
-int (*my_strncmp)(const char *s1, const char *s2, size_t n) = NULL;
-int (*my_strcasecmp)(const char *s1, const char *s2) = NULL;
-char *(my_strstr)(const char *s1, const char *s2) = NULL;
+int (*my_strcmp)(const char *, const char *) = NULL;
+void *(*my_memmove)(void *, const void *, size_t) = NULL;
+int (*my_strncmp)(const char *, const char *, size_t) = NULL;
+int (*my_strcasecmp)(const char *, const char *) = NULL;
+char *(*my_strstr)(const char *, const char *) = NULL;
+char *(*my_strpbrk)(char const *, char const *) = NULL;
+size_t (*my_strcspn)(char const *, char const *) = NULL;
+
+void setup()
+{
+    TEST_HEADER;
+    printf("--> Setting up tests...\n");
+    printf("--> Setting up printf automatic flush...\n");
+    assert(setvbuf(stdout, NULL, _IONBF, 0) == 0);
+    printf("--> Setting up random seed to 42...\n");
+    srand(42);
+    printf("--> Setting up signal handler...\n");
+    for (int i = 0; i < 32; i++)
+        signal(i, signal_handler);
+}
 
 void unload_library(void)
 {
-    printf("Unloading library\n");
+    TEST_HEADER;
+    printf("--> Unloading library\n");
     dlclose(handler);
 }
 
 void load_library(void)
 {
-    TEST_HEADER;
-    printf("Loading library ./libasm.so");
+    printf("\n\n--> Loading library [./libasm.so]\n");
     NOT_NULL(handler = dlopen("./libasm.so", RTLD_LAZY));
     LOAD_SYM(my_strlen, "strlen");
     LOAD_SYM(my_strchr, "strchr");
@@ -56,11 +102,21 @@ void load_library(void)
     LOAD_SYM(my_memcpy, "memcpy");
     LOAD_SYM(my_memset, "memset");
     LOAD_SYM(my_strcmp, "strcmp");
-    LOAD_SYM(my_memove, "memmove");
+    LOAD_SYM(my_memmove, "memmove");
     LOAD_SYM(my_strncmp, "strncmp");
     LOAD_SYM(my_strcasecmp, "strcasecmp");
     LOAD_SYM(my_strstr, "strstr");
+    LOAD_SYM(my_strpbrk, "strpbrk");
+    LOAD_SYM(my_strcspn, "strcspn");
 }
+
+/*
+
+Asserts functions to test each functions
+feel free to add more functions to test
+and use them in the tests section
+
+*/
 
 void assert_strlen(char const *test)
 {
@@ -99,15 +155,15 @@ void assert_memset(size_t size_to_test)
         buf1[i] = c;
         buf2[i] = c;
     }
-    char visible[] = {'a', 'b', 'c', 'd', 'e'}
+    char visible[] = {'a', 'b', 'c', 'd', 'e'};
     int c = visible[sizeof(visible) - 1];
-    my_memset(buf1, c, size);
-    memset(buf2, c, size);
+    my_memset(buf1, c, size_to_test);
+    memset(buf2, c, size_to_test);
     printf("=============\n");
-    printf("\tTesting:  [(%p), (%lu), (%lu)]\n", right, size, size_to_test);
-    printf("\tGot:      [%d]\n", memcmp(buf1, right, size_to_test));
+    printf("\tTesting:  [(%p), (%lu)]\n", buf1, size_to_test);
+    printf("\tGot:      [%d]\n", memcmp(buf1, buf2, BUFSIZ));
     printf("\t   ->:    ["); write(1, buf1, size_to_test); printf("]\n");
-    printf("\tExpected: [%d]\n", memcmp(buf2, right, size_to_test));
+    printf("\tExpected: [%d]\n", 0);
     printf("\t   ->:    ["); write(1, buf2, size_to_test); printf("]\n");
     printf("=============\n\n");
 }
@@ -145,7 +201,7 @@ void assert_memmove(size_t size, size_t offset1, size_t offset2)
     char buf4[BUFSIZ] = {0};
 
     for (size_t i = 0; i < BUFSIZ; i++) {
-        char visible[] = {'a', 'b', 'c', 'd', 'e'}
+        char visible[] = {'a', 'b', 'c', 'd', 'e'};
         int c = visible[i % sizeof(visible)];
         buf1[i] = c;
         buf2[i] = c;
@@ -157,7 +213,7 @@ void assert_memmove(size_t size, size_t offset1, size_t offset2)
     memmove(buf2, buf2 + offset2, size);
 
     my_memmove(buf3, buf1 + offset2, size);
-    memove(buf4, buf2 + offset2, size);
+    memmove(buf4, buf2 + offset2, size);
 
     printf("=============\n");
     printf("\tTesting:  [(%p), (%lu), (%lu), (%lu)]\n", buf1, size, offset1, offset2);
@@ -198,7 +254,30 @@ void assert_strstr(const char *s1, const char *s2)
     printf("=============\n\n");
 }
 
-/* tests */
+void assert_strpbrk(const char *s1, const char *s2)
+{
+    printf("=============\n");
+    printf("\tTesting:  [(%s), (%s)]\n", s1, s2);
+    printf("\tGot:      [%s]\n", my_strpbrk(s1, s2));
+    printf("\tExpected: [%s]\n", strpbrk(s1, s2));
+    printf("=============\n\n");
+}
+
+void assert_strcspn(const char *s1, const char *s2)
+{
+    printf("=============\n");
+    printf("\tTesting:  [(%s), (%s)]\n", s1, s2);
+    printf("\tGot:      [%lu]\n", my_strcspn(s1, s2));
+    printf("\tExpected: [%lu]\n", strcspn(s1, s2));
+    printf("=============\n\n");
+}
+
+/*
+
+tests
+Please call the asserts functions to test your functions.
+
+*/
 
 
 void tests_strlen(void)
@@ -347,12 +426,22 @@ void tests_strstr(void)
     assert_strstr("hello world", "lo");
     assert_strstr("hello world", "worl");
     assert_strstr("hello world", "orld");
-    assert_strstr("hello world", "llo")
+    assert_strstr("hello world", "llo");
     assert_strstr("", "");
     assert_strstr("a", "");
     assert_strstr("a", "a");
     assert_strstr("", "a");
     assert_strstr("aa", "a");
+}
+
+void tests_strpbrk(void)
+{
+    printf("Not implemented\n");
+}
+
+void tests_strcspn(void)
+{
+    printf("Not implemented\n");
 }
 
 void run_tests()
@@ -369,7 +458,7 @@ void run_tests()
 
 int main(void)
 {
-    setvbuf(stdout, NULL, _IONBF, 0);
+    setup();
     load_library();
     run_tests();
     unload_library();
