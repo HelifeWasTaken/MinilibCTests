@@ -1,5 +1,5 @@
 /**
- * Tests.c
+ * Tests.4
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -249,15 +249,17 @@ void assert_strcmp(const char *s1, const char *s2)
 void assert_memmove(size_t size, size_t offset1, size_t offset2)
 {
     size_t size_array = size + offset1 + offset2;
-    char *buf1 = calloc(size_array, sizeof(char));
-    char *buf2 = calloc(size_array, sizeof(char));
-    char *buf3 = calloc(size_array, sizeof(char));
-    char *buf4 = calloc(size_array, sizeof(char));
+    char *buf1, *buf2, *buf3, *buf4, *mbuf1, *mbuf2, *mbuf3, *mbuf4;
 
-    char *mbuf1 = calloc(size_array, sizeof(char));
-    char *mbuf2 = calloc(size_array, sizeof(char));
-    char *mbuf3 = calloc(size_array, sizeof(char));
-    char *mbuf4 = calloc(size_array, sizeof(char));
+    NOT_NULL(buf1 = calloc(size_array, sizeof(char)));
+    NOT_NULL(buf2 = calloc(size_array, sizeof(char)));
+    NOT_NULL(buf3 = calloc(size_array, sizeof(char)));
+    NOT_NULL(buf4 = calloc(size_array, sizeof(char)));
+
+    NOT_NULL(mbuf1 = calloc(size_array, sizeof(char)));
+    NOT_NULL(mbuf2 = calloc(size_array, sizeof(char)));
+    NOT_NULL(mbuf3 = calloc(size_array, sizeof(char)));
+    NOT_NULL(mbuf4 = calloc(size_array, sizeof(char)));
 
     for (size_t i = 0; i < size_array; i++) {
         char visible[] = {'a', 'b', 'c', 'd', 'e'};
@@ -301,10 +303,14 @@ void assert_memmove(size_t size, size_t offset1, size_t offset2)
     } else {
         success++;
     }
-    free(buf1);
-    free(buf2);
-    free(buf3);
+    free(mbuf4);
+    free(mbuf3);
+    free(mbuf2);
+    free(mbuf1);
     free(buf4);
+    free(buf3);
+    free(buf2);
+    free(buf1);
 }
 
 void assert_strncmp(const char *s1, const char *s2, size_t n)
