@@ -515,7 +515,34 @@ void tests_strstr(void)
 
 void tests_strpbrk(void)
 {
-    printf("Not implemented\n");
+    assert_strpbrk("hello world", "helowrd");
+    assert_strpbrk("hello world", "elowrd");
+    assert_strpbrk("hello world", "lowrd");
+    assert_strpbrk("hello world", "owrd");
+    assert_strpbrk("hello world", "wrd");
+    assert_strpbrk("hello world", "rd");
+    assert_strpbrk("hello world", "d");
+    assert_strpbrk("ello world", "helowrd");
+    assert_strpbrk("llo world", "helowrd");
+    assert_strpbrk("llo world", "helowrd");
+    assert_strpbrk("lo world", "helowrd");
+    assert_strpbrk("o world", "helowrd");
+    assert_strpbrk(" world", "helowrd");
+    assert_strpbrk("world", "helowrd");
+    assert_strpbrk("orld", "helowrd");
+    assert_strpbrk("rld", "helowrd");
+    assert_strpbrk("ld", "helowrd");
+    assert_strpbrk("d", "helowrd");
+    assert_strpbrk("d", "h");
+    assert_strpbrk("ah", "h");
+    assert_strpbrk("h", "h");
+    assert_strpbrk("", "h");
+    assert_strpbrk("aled", "");
+    assert_strpbrk("", "");
+    assert_strpbrk("a", "");
+    assert_strpbrk("ab", "");
+    assert_strpbrk("", "a");
+    assert_strpbrk("", "ab");
 }
 
 void tests_strcspn(void)
