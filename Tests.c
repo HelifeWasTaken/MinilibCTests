@@ -254,16 +254,53 @@ void assert_memmove(size_t size, size_t offset1, size_t offset2)
     char *buf3 = calloc(size_array, sizeof(char));
     char *buf4 = calloc(size_array, sizeof(char));
 
+    char *mbuf1 = calloc(size_array, sizeof(char));
+    char *mbuf2 = calloc(size_array, sizeof(char));
+    char *mbuf3 = calloc(size_array, sizeof(char));
+    char *mbuf4 = calloc(size_array, sizeof(char));
+
     for (size_t i = 0; i < size_array; i++) {
         char visible[] = {'a', 'b', 'c', 'd', 'e'};
         int c = visible[i % sizeof(visible)];
         buf1[i] = c;
         buf2[i] = c;
+        mbuf1[i] = c;
+        mbuf2[i] = c;
         c = visible[(i + offset1) % sizeof(visible)];
         buf3[i] = c;
         buf4[i] = c;
+        mbuf3[i] = c;
+        mbuf4[i] = c;
     }
-    printf("Not implemented test yet\n");
+    memmove(buf1 + offset1, buf1, size);
+    memmove(buf4, buf4 + offset2, size);
+    memmove(buf3 + offset1, buf1 + offset2, size);
+    memmove(buf2 + offset2, buf4 + offset1, size);
+    printf("=============\n");
+    printf("\tTesting:  [(%lu), (%lu), (%lu)]\n", size, offset1, offset2);
+    my_memmove(mbuf1 + offset1, mbuf1, size);
+    my_memmove(mbuf4, mbuf4 + offset2, size);
+    my_memmove(mbuf3 + offset1, mbuf1 + offset2, size);
+    my_memmove(mbuf2 + offset2, mbuf4 + offset1, size);
+    int res1 = memcmp(mbuf1, buf1, size_array);
+    int res2 = memcmp(mbuf2, buf2, size_array);
+    int res3 = memcmp(mbuf3, buf3, size_array);
+    int res4 = memcmp(mbuf4, buf4, size_array);
+    if (res1 != 0 || res2 != 0 || res3 != 0 || res4 != 0) {
+        printf("\tGot:      [%d, %d, %d, %d]\n", res1, res2, res3, res4);
+        printf("\t   ->:    ["); write(1, mbuf1, size_array); printf("]\n");
+        printf("\t   ->:    ["); write(1, mbuf2, size_array); printf("]\n");
+        printf("\t   ->:    ["); write(1, mbuf3, size_array); printf("]\n");
+        printf("\t   ->:    ["); write(1, mbuf4, size_array); printf("]\n");
+        printf("\tExpected: [%d, %d, %d, %d]\n", 0, 0, 0, 0);
+        printf("\t   ->:    ["); write(1, buf1, size_array); printf("]\n");
+        printf("\t   ->:    ["); write(1, buf2, size_array); printf("]\n");
+        printf("\t   ->:    ["); write(1, buf3, size_array); printf("]\n");
+        printf("\t   ->:    ["); write(1, buf4, size_array); printf("]\n");
+        failure++;
+    } else {
+        success++;
+    }
     free(buf1);
     free(buf2);
     free(buf3);
