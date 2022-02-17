@@ -515,6 +515,7 @@ void tests_strstr(void)
 
 void tests_strpbrk(void)
 {
+    /* Easy tests */
     assert_strpbrk("hello world", "helowrd");
     assert_strpbrk("hello world", "elowrd");
     assert_strpbrk("hello world", "lowrd");
@@ -547,7 +548,35 @@ void tests_strpbrk(void)
 
 void tests_strcspn(void)
 {
-    printf("Not implemented\n");
+    /* Easy tests */
+    assert_strcspn("hello world", "helowrd");
+    assert_strcspn("hello world", "elowrd");
+    assert_strcspn("hello world", "lowrd");
+    assert_strcspn("hello world", "owrd");
+    assert_strcspn("hello world", "wrd");
+    assert_strcspn("hello world", "rd");
+    assert_strcspn("hello world", "d");
+    assert_strcspn("ello world", "helowrd");
+    assert_strcspn("llo world", "helowrd");
+    assert_strcspn("llo world", "helowrd");
+    assert_strcspn("lo world", "helowrd");
+    assert_strcspn("o world", "helowrd");
+    assert_strcspn(" world", "helowrd");
+    assert_strcspn("world", "helowrd");
+    assert_strcspn("orld", "helowrd");
+    assert_strcspn("rld", "helowrd");
+    assert_strcspn("ld", "helowrd");
+    assert_strcspn("d", "helowrd");
+    assert_strcspn("d", "h");
+    assert_strcspn("ah", "h");
+    assert_strcspn("h", "h");
+    assert_strcspn("", "h");
+    assert_strcspn("aled", "");
+    assert_strcspn("", "");
+    assert_strcspn("a", "");
+    assert_strcspn("ab", "");
+    assert_strcspn("", "a");
+    assert_strcspn("", "ab");
 }
 
 void run_tests()

@@ -106,6 +106,9 @@ It also shows you your result at the end
 
 ## Writing tests
 
+Notes: tests for strpbrk and strcspn are still to easy if someone wants to write some
+Notes: assert_memmove is not implemented
+
 If the function is not added in the `load_library` create a global variable containing the function pointer inside of it and you the macro `LOAD_SYM()` to load the function inside it
 
 Then write the assert function for this call
