@@ -154,8 +154,8 @@ void assert_strchr(const char *s, int c)
     char *res1 = my_strchr(s, c);
     char *res2 = strchr(s, c);
     if (res1 != res2) {
-        printf("\tGot:      [%p]\n", res1);
-        printf("\tExpected: [%p]\n", res2);
+        printf("\tGot:      [%s]\n", res1);
+        printf("\tExpected: [%s]\n", res2);
         failure++;
     } else {
         success++;
@@ -270,10 +270,10 @@ void assert_memmove(size_t size, size_t offset1, size_t offset2)
     memmove(buf2, buf2 + offset2, size);
     int res1 = memcmp(buf1, buf2, 100);
     if (res1 != 0) {
-        printf("\tGot:      [%d]\n", memcmp(buf1, buf2, 100));
-        printf("\t   ->:    ["); write(1, buf1, 100); printf("]\n");
+        printf("\tGot:      [%d]\n", memcmp(buf1, buf2, size_array));
+        printf("\t   ->:    ["); write(1, buf1, size_array); printf("]\n");
         printf("\tExpected: [%d]\n", 0);
-        printf("\t   ->:    ["); write(1, buf2, 100); printf("]\n");
+        printf("\t   ->:    ["); write(1, buf2, size_array); printf("]\n");
         failure++;
     } else {
         success++;
@@ -285,12 +285,12 @@ void assert_memmove(size_t size, size_t offset1, size_t offset2)
     my_memmove(buf3, buf1 + offset2, size);
     memmove(buf4, buf2 + offset2, size);
 
-    int res2 = memcmp(buf3, buf4, 100);
+    int res2 = memcmp(buf3, buf4, size_array);
     if (res2 != 0) {
-        printf("\tGot:      [%d]\n", memcmp(buf3, buf4, 100));
-        printf("\t   ->:    ["); write(1, buf3, 100); printf("]\n");
+        printf("\tGot:      [%d]\n", memcmp(buf3, buf4, size_array));
+        printf("\t   ->:    ["); write(1, buf3, size_array); printf("]\n");
         printf("\tExpected: [%d]\n", 0);
-        printf("\t   ->:    ["); write(1, buf4, 100); printf("]\n");
+        printf("\t   ->:    ["); write(1, buf4, size_array); printf("]\n");
         failure++;
     } else {
         success++;
@@ -571,11 +571,45 @@ void run_tests()
     RUN_TEST_SUITE(tests_strcspn, "strcspn");
 }
 
-int main(void)
+void chose_specific_test(char *funcname)
+{
+    if (strcmp(funcname, "strlen") == 0)
+        RUN_TEST_SUITE(tests_strlen, "strlen");
+    else if (strcmp(funcname, "strchr") == 0)
+        RUN_TEST_SUITE(tests_strchr, "strchr");
+    else if (strcmp(funcname, "strrchr") == 0)
+        RUN_TEST_SUITE(tests_strrchr, "strrchr");
+    else if (strcmp(funcname, "memset") == 0)
+        RUN_TEST_SUITE(tests_memset, "memset");
+    else if (strcmp(funcname, "memcpy") == 0)
+        RUN_TEST_SUITE(tests_memcpy, "memcpy");
+    else if (strcmp(funcname, "strcmp") == 0)
+        RUN_TEST_SUITE(tests_strcmp, "strcmp");
+    else if (strcmp(funcname, "memmove") == 0)
+        RUN_TEST_SUITE(tests_memmove, "memmove");
+    else if (strcmp(funcname, "strncmp") == 0)
+        RUN_TEST_SUITE(tests_strncmp, "strncmp");
+    else if (strcmp(funcname, "strcasecmp") == 0)
+        RUN_TEST_SUITE(tests_strcasecmp, "strcasecmp");
+    else if (strcmp(funcname, "strstr") == 0)
+        RUN_TEST_SUITE(tests_strstr, "strstr");
+    else if (strcmp(funcname, "strpbrk") == 0)
+        RUN_TEST_SUITE(tests_strpbrk, "strpbrk");
+    else if (strcmp(funcname, "strcspn") == 0)
+        RUN_TEST_SUITE(tests_strcspn, "strcspn");
+    else
+        printf("No such test: [%s]!\n", funcname);
+}
+
+int main(int ac, char **av)
 {
     setup();
     load_library();
-    run_tests();
+    if (ac == 1)
+        run_tests();
+    else
+        for (unsigned int i = 1; i < ac; i++)
+            chose_specific_test(av[i]);
     unload_library();
     show_score();
     return 0;
