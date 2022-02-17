@@ -90,9 +90,19 @@ Run all the tests specifically for strncmp and strcmp
         Expected: [0]
            ->:    [cdeabcdeaaa]
 =============
+...
+~~~~~~~~
+        TEST ASM B-400
+~~~~~~~~
+
+Success: [84]
+Failure: [39]
+Rate: [68.292686%]
 ```
 
 If the test fails it shows information about `Got` and `Expected` fields
+
+It also shows you your result at the end
 
 ## Writing tests
 
