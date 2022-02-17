@@ -23,6 +23,9 @@
 #include <stdlib.h>
 #include <signal.h>
 
+int success = 0;
+int failure = 0;
+
 /*
 Setups
 */
@@ -87,8 +90,7 @@ void setup()
 
 void unload_library(void)
 {
-    TEST_HEADER;
-    printf("--> Unloading library\n");
+    printf("\n\n--> Unloading library\n");
     dlclose(handler);
 }
 
@@ -110,6 +112,14 @@ void load_library(void)
     LOAD_SYM(my_strcspn, "strcspn");
 }
 
+void show_score()
+{
+    TEST_HEADER;
+    printf("Success: [%d]\n", success);
+    printf("Failure: [%d]\n", failure);
+    printf("Rate: [%f%%]\n", ((float)success / (float)(success + failure)) * 100);
+}
+
 /*
 
 Asserts functions to test each functions
@@ -122,8 +132,15 @@ void assert_strlen(char const *test)
 {
     printf("=============\n");
     printf("\tTesting:  [(%s)]\n", test);
-    printf("\tGot:      [%lu]\n", strlen(test));
-    printf("\tExpected: [%lu]\n", my_strlen(test));
+    int res1 = my_strlen(test);
+    int res2 = strlen(test);
+    if (res2 != res1) {
+        printf("\tGot:      [%lu]\n", res1);
+        printf("\tExpected: [%lu]\n", res2);
+        failure++;
+    } else {
+        success++;
+    }
     printf("=============\n\n");
 }
 
@@ -131,8 +148,15 @@ void assert_strchr(const char *s, int c)
 {
     printf("=============\n");
     printf("\tTesting:  [(%s), (%c)]\n", s, c);
-    printf("\tGot:      [%s]\n", my_strchr(s, c));
-    printf("\tExpected: [%s]\n", strchr(s, c));
+    char *res1 = my_strchr(s, c);
+    char *res2 = strchr(s, c);
+    if (res1 != res2) {
+        printf("\tGot:      [%p]\n", res1);
+        printf("\tExpected: [%p]\n", res2);
+        failure++;
+    } else {
+        success++;
+    }
     printf("=============\n\n");
 }
 
@@ -140,8 +164,15 @@ void assert_strrchr(const char *s, int c)
 {
     printf("=============\n");
     printf("\tTesting:  [(%s), (%c)]\n", s, c);
-    printf("\tGot:      [%s]\n", my_strrchr(s, c));
-    printf("\tExpected: [%s]\n", strrchr(s, c));
+    char *res1 = my_strrchr(s, c);
+    char *res2 = my_strrchr(s, c);
+    if (res1 != res2) {
+        printf("\tGot:      [%s]\n", my_strrchr(s, c));
+        printf("\tExpected: [%s]\n", strrchr(s, c));
+        failure++;
+    } else {
+        success++;
+    }
     printf("=============\n\n");
 }
 
@@ -161,10 +192,16 @@ void assert_memset(size_t size_to_test)
     memset(buf2, c, size_to_test);
     printf("=============\n");
     printf("\tTesting:  [(%p), (%lu)]\n", buf1, size_to_test);
-    printf("\tGot:      [%d]\n", memcmp(buf1, buf2, BUFSIZ));
-    printf("\t   ->:    ["); write(1, buf1, size_to_test); printf("]\n");
-    printf("\tExpected: [%d]\n", 0);
-    printf("\t   ->:    ["); write(1, buf2, size_to_test); printf("]\n");
+    int res1 = memcmp(buf1, buf2, size_to_test);
+    if (res1 != 0) {
+        printf("\tGot:      [%d]\n", memcmp(buf1, buf2, BUFSIZ));
+        printf("\t   ->:    ["); write(1, buf1, size_to_test); printf("]\n");
+        printf("\tExpected: [%d]\n", 0);
+        printf("\t   ->:    ["); write(1, buf2, size_to_test); printf("]\n");
+        failure++;
+    } else {
+        success++;
+    }
     printf("=============\n\n");
 }
 
@@ -177,10 +214,16 @@ void assert_memcpy(void *right, size_t size, size_t size_to_test)
     memcpy(buf2, right, size);
     printf("=============\n");
     printf("\tTesting:  [(%p), (%lu), (%lu)]\n", right, size, size_to_test);
-    printf("\tGot:      [%d]\n", memcmp(buf1, right, size_to_test));
-    printf("\t   ->:    ["); write(1, buf1, size_to_test); printf("]\n");
-    printf("\tExpected: [%d]\n", memcmp(buf2, right, size_to_test));
-    printf("\t   ->:    ["); write(1, buf2, size_to_test); printf("]\n");
+    int res1 = memcmp(buf1, buf2, size_to_test);
+    if (res1 != 0) {
+        printf("\tGot:      [%d]\n", memcmp(buf1, buf2, BUFSIZ));
+        printf("\t   ->:    ["); write(1, buf1, size_to_test); printf("]\n");
+        printf("\tExpected: [%d]\n", 0);
+        printf("\t   ->:    ["); write(1, buf2, size_to_test); printf("]\n");
+        failure++;
+    } else {
+        success++;
+    }
     printf("=============\n\n");
 }
 
@@ -188,17 +231,24 @@ void assert_strcmp(const char *s1, const char *s2)
 {
     printf("=============\n");
     printf("\tTesting:  [(%s), (%s)]\n", s1, s2);
-    printf("\tGot:      [%d]\n", my_strcmp(s1, s2));
-    printf("\tExpected: [%d]\n", strcmp(s1, s2));
+    int res1 = my_strcmp(s1, s2);
+    int res2 = strcmp(s1, s2);
+    if (res2 != res1) {
+        printf("\tGot:      [%d]\n", res1);
+        printf("\tExpected: [%d]\n", res2);
+        failure++;
+    } else {
+        success++;
+    }
     printf("=============\n\n");
 }
 
 void assert_memmove(size_t size, size_t offset1, size_t offset2)
 {
-    char buf1[BUFSIZ] = {0};
-    char buf2[BUFSIZ] = {0};
-    char buf3[BUFSIZ] = {0};
-    char buf4[BUFSIZ] = {0};
+    char buf1[100] = {0};
+    char buf2[100] = {0};
+    char buf3[100] = {0};
+    char buf4[100] = {0};
 
     for (size_t i = 0; i < BUFSIZ; i++) {
         char visible[] = {'a', 'b', 'c', 'd', 'e'};
@@ -217,13 +267,29 @@ void assert_memmove(size_t size, size_t offset1, size_t offset2)
 
     printf("=============\n");
     printf("\tTesting:  [(%p), (%lu), (%lu), (%lu)]\n", buf1, size, offset1, offset2);
-    printf("\tGot:      [%d]\n", memcmp(buf1, buf2, size));
-    printf("\t   ->:    ["); write(1, buf1, size); printf("]\n");
-    printf("\tExpected: [%d]\n", 0);
+    int res1 = memcmp(buf1, buf2, 100);
+    if (res1 != 0) {
+        printf("\tGot:      [%d]\n", memcmp(buf1, buf2, 100));
+        printf("\t   ->:    ["); write(1, buf1, 100); printf("]\n");
+        printf("\tExpected: [%d]\n", 0);
+        printf("\t   ->:    ["); write(1, buf2, 100); printf("]\n");
+        failure++;
+    } else {
+        success++;
+    }
+    printf("=============\n");
+    printf("=============\n");
     printf("\t Testing: [(%p), (%lu), (%lu), (%lu)]\n", buf3, size, offset1, offset2);
-    printf("Got:     [%d]\n", memcmp(buf3, buf4, size));
-    printf("   ->:    ["); write(1, buf3, size); printf("]\n");
-    printf("Expected: [%d]\n", 0);
+    int res2 = memcmp(buf3, buf4, 100);
+    if (res2 != 0) {
+        printf("\tGot:      [%d]\n", memcmp(buf3, buf4, 100));
+        printf("\t   ->:    ["); write(1, buf3, 100); printf("]\n");
+        printf("\tExpected: [%d]\n", 0);
+        printf("\t   ->:    ["); write(1, buf4, 100); printf("]\n");
+        failure++;
+    } else {
+        success++;
+    }
     printf("=============\n\n");
 }
 
@@ -231,8 +297,16 @@ void assert_strncmp(const char *s1, const char *s2, size_t n)
 {
     printf("=============\n");
     printf("\tTesting:  [(%s), (%s), (%lu)]\n", s1, s2, n);
-    printf("\tGot:      [%d]\n", my_strncmp(s1, s2, n));
-    printf("\tExpected: [%d]\n", strncmp(s1, s2, n));
+    int res1 = my_strncmp(s1, s2, n);
+    int res2 = strncmp(s1, s2, n);
+
+    if (res2 != res1) {
+        printf("\tGot:      [%d]\n", res1);
+        printf("\tExpected: [%d]\n", res2);
+        failure++;
+    } else {
+        success++;
+    }
     printf("=============\n\n");
 }
 
@@ -240,8 +314,15 @@ void assert_strcasecmp(const char *s1, const char *s2)
 {
     printf("=============\n");
     printf("\tTesting:  [(%s), (%s)]\n", s1, s2);
-    printf("\tGot:      [%d]\n", my_strcasecmp(s1, s2));
-    printf("\tExpected: [%d]\n", strcasecmp(s1, s2));
+    int res1 = my_strcasecmp(s1, s2);
+    int res2 = strcasecmp(s1, s2);
+    if (res2 != res1) {
+        printf("\tGot:      [%d]\n", res1);
+        printf("\tExpected: [%d]\n", res2);
+        failure++;
+    } else {
+        success++;
+    }
     printf("=============\n\n");
 }
 
@@ -249,8 +330,15 @@ void assert_strstr(const char *s1, const char *s2)
 {
     printf("=============\n");
     printf("\tTesting:  [(%s), (%s)]\n", s1, s2);
-    printf("\tGot:      [%s]\n", my_strstr(s1, s2));
-    printf("\tExpected: [%s]\n", strstr(s1, s2));
+    char *res1 = my_strstr(s1, s2);
+    char *res2 = strstr(s1, s2);
+    if (res2 != res1) {
+        printf("\tGot:      [%s]\n", res1);
+        printf("\tExpected: [%s]\n", res2);
+        failure++;
+    } else {
+        success++;
+    }
     printf("=============\n\n");
 }
 
@@ -258,8 +346,15 @@ void assert_strpbrk(const char *s1, const char *s2)
 {
     printf("=============\n");
     printf("\tTesting:  [(%s), (%s)]\n", s1, s2);
-    printf("\tGot:      [%s]\n", my_strpbrk(s1, s2));
-    printf("\tExpected: [%s]\n", strpbrk(s1, s2));
+    char *res1 = my_strpbrk(s1, s2);
+    char *res2 = strpbrk(s1, s2);
+    if (res2 != res1) {
+        printf("\tGot:      [%s]\n", res1);
+        printf("\tExpected: [%s]\n", res2);
+        failure++;
+    } else {
+        success++;
+    }
     printf("=============\n\n");
 }
 
@@ -267,8 +362,15 @@ void assert_strcspn(const char *s1, const char *s2)
 {
     printf("=============\n");
     printf("\tTesting:  [(%s), (%s)]\n", s1, s2);
-    printf("\tGot:      [%lu]\n", my_strcspn(s1, s2));
-    printf("\tExpected: [%lu]\n", strcspn(s1, s2));
+    size_t res1 = my_strcspn(s1, s2);
+    size_t res2 = strcspn(s1, s2);
+    if (res2 != res1) {
+        printf("\tGot:      [%lu]\n", res1);
+        printf("\tExpected: [%lu]\n", res2);
+        failure++;
+    } else {
+        success++;
+    }
     printf("=============\n\n");
 }
 
@@ -462,5 +564,6 @@ int main(void)
     load_library();
     run_tests();
     unload_library();
+    show_score();
     return 0;
 }
