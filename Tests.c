@@ -30,7 +30,7 @@
 void *handler = NULL;
 size_t (*my_strlen)(char const *) = NULL;
 size_t (*my_memcpy)(void *, const void *, size_t) = NULL;
-size_t (*my_strcmp)(const char *s1, const char *s2) = NULL;
+int (*my_strcmp)(const char *s1, const char *s2) = NULL;
 
 void unload_library(void)
 {
@@ -77,7 +77,7 @@ void assert_memcpy(void *right, size_t size, size_t size_to_test)
 void assert_strcmp(const char *s1, const char *s2)
 {
     printf("=============\n");
-    printf("\tTesting:  [%s, %s]\n", s1, s2);
+    printf("\tTesting:  [(%s), (%s)]\n", s1, s2);
     printf("\tGot:      [%d]\n", my_strcmp(s1, s2));
     printf("\tExpected: [%d]\n", strcmp(s1, s2));
     printf("=============\n\n");
