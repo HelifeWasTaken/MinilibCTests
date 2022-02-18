@@ -137,7 +137,7 @@ void show_score()
     TEST_HEADER;
     printf("Success: [\x1B[32m%d\e[0m]\n", success);
     printf("Failure: [\x1B[31m%d\e[0m]\n", failure);
-    printf("Rate: [%f%%]\n", ((float)success / (float)(success + failure)) * 100);
+    printf("Rate: [%.2f%%]\n", ((float)success / (float)(success + failure)) * 100);
 }
 
 /*
@@ -682,7 +682,7 @@ void chose_specific_test(char *funcname)
 {
     for (int i = 0; i < sizeof(FUNCS) / sizeof(FUNCS[0]); i++) {
         if (strcmp(FUNCS[i].funcname, funcname) == 0) {
-            printf("|---------------------------------------|"
+            printf("|---------------------------------------|\n"
                    " Running specific test suite for [%s]\n"
                    "|---------------------------------------|\n\n", FUNCS[i].funcname); \
             SLEEP_200MS;
