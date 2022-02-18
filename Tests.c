@@ -1,5 +1,5 @@
 /**
- * Tests.4
+ * Tests.c
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -249,17 +249,15 @@ void assert_strcmp(const char *s1, const char *s2)
 void assert_memmove(size_t size, size_t offset1, size_t offset2)
 {
     size_t size_array = size + offset1 + offset2;
-    char *buf1, *buf2, *buf3, *buf4, *mbuf1, *mbuf2, *mbuf3, *mbuf4;
+    char *buf1 = calloc(size_array, sizeof(char));
+    char *buf2 = calloc(size_array, sizeof(char));
+    char *buf3 = calloc(size_array, sizeof(char));
+    char *buf4 = calloc(size_array, sizeof(char));
 
-    NOT_NULL(buf1 = calloc(size_array, sizeof(char)));
-    NOT_NULL(buf2 = calloc(size_array, sizeof(char)));
-    NOT_NULL(buf3 = calloc(size_array, sizeof(char)));
-    NOT_NULL(buf4 = calloc(size_array, sizeof(char)));
-
-    NOT_NULL(mbuf1 = calloc(size_array, sizeof(char)));
-    NOT_NULL(mbuf2 = calloc(size_array, sizeof(char)));
-    NOT_NULL(mbuf3 = calloc(size_array, sizeof(char)));
-    NOT_NULL(mbuf4 = calloc(size_array, sizeof(char)));
+    char *mbuf1 = calloc(size_array, sizeof(char));
+    char *mbuf2 = calloc(size_array, sizeof(char));
+    char *mbuf3 = calloc(size_array, sizeof(char));
+    char *mbuf4 = calloc(size_array, sizeof(char));
 
     for (size_t i = 0; i < size_array; i++) {
         char visible[] = {'a', 'b', 'c', 'd', 'e'};
@@ -270,8 +268,8 @@ void assert_memmove(size_t size, size_t offset1, size_t offset2)
         mbuf2[i] = c;
         c = visible[(i + offset1) % sizeof(visible)];
         buf3[i] = c;
-        buf4[i] = c;
         mbuf3[i] = c;
+        buf4[i] = c;
         mbuf4[i] = c;
     }
     memmove(buf1 + offset1, buf1, size);
@@ -303,14 +301,10 @@ void assert_memmove(size_t size, size_t offset1, size_t offset2)
     } else {
         success++;
     }
-    free(mbuf4);
-    free(mbuf3);
-    free(mbuf2);
-    free(mbuf1);
-    free(buf4);
-    free(buf3);
-    free(buf2);
     free(buf1);
+    free(buf2);
+    free(buf3);
+    free(buf4);
 }
 
 void assert_strncmp(const char *s1, const char *s2, size_t n)
@@ -638,34 +632,36 @@ void run_tests()
     RUN_TEST_SUITE(tests_strcspn, "strcspn");
 }
 
+struct funcs {
+    char *funcname;
+    void (*f)(void);
+};
+static const struct funcs FUNCS[] = {
+    {tests_strlen, "strlen"},
+    {tests_strchr, "strchr"},
+    {tests_strrchr, "strrchr"},
+    {tests_memset, "memset"},
+    {tests_memcpy, "memcpy"},
+    {tests_strcmp, "strcmp"},
+    {tests_memmove, "memmove"},
+    {tests_strncmp, "strncmp"},
+    {tests_strcasecmp, "strcasecmp"},
+    {tests_strstr, "strstr"},
+    {tests_strpbrk, "strpbrk"},
+    {tests_strcspn, "strcspn"}
+};
 void chose_specific_test(char *funcname)
 {
-    if (strcmp(funcname, "strlen") == 0)
-        RUN_TEST_SUITE(tests_strlen, "strlen");
-    else if (strcmp(funcname, "strchr") == 0)
-        RUN_TEST_SUITE(tests_strchr, "strchr");
-    else if (strcmp(funcname, "strrchr") == 0)
-        RUN_TEST_SUITE(tests_strrchr, "strrchr");
-    else if (strcmp(funcname, "memset") == 0)
-        RUN_TEST_SUITE(tests_memset, "memset");
-    else if (strcmp(funcname, "memcpy") == 0)
-        RUN_TEST_SUITE(tests_memcpy, "memcpy");
-    else if (strcmp(funcname, "strcmp") == 0)
-        RUN_TEST_SUITE(tests_strcmp, "strcmp");
-    else if (strcmp(funcname, "memmove") == 0)
-        RUN_TEST_SUITE(tests_memmove, "memmove");
-    else if (strcmp(funcname, "strncmp") == 0)
-        RUN_TEST_SUITE(tests_strncmp, "strncmp");
-    else if (strcmp(funcname, "strcasecmp") == 0)
-        RUN_TEST_SUITE(tests_strcasecmp, "strcasecmp");
-    else if (strcmp(funcname, "strstr") == 0)
-        RUN_TEST_SUITE(tests_strstr, "strstr");
-    else if (strcmp(funcname, "strpbrk") == 0)
-        RUN_TEST_SUITE(tests_strpbrk, "strpbrk");
-    else if (strcmp(funcname, "strcspn") == 0)
-        RUN_TEST_SUITE(tests_strcspn, "strcspn");
-    else
-        printf("No such test: [%s]!\n", funcname);
+    for (int i = 0; i < sizeof(FUNCS) / sizeof(FUNCS[0]); i++) {
+        if (strcmp(FUNCS[i].funcname, funcname) == 0) {
+            printf("|---------------------------------------|"
+                   " Running specific test suite for [%s]\n" 
+                   "|---------------------------------------|\n\n", FUNCS[i].funcname); \
+            FUNCS[i].f();
+            return;
+        }
+    }
+    printf("No such test: [%s]!\n", funcname);
 }
 
 int main(int ac, char **av)
