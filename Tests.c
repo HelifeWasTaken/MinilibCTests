@@ -116,7 +116,7 @@ void unload_library(void)
 void load_library(void)
 {
     printf("\n\n--> Loading library [./libasm.so]\n");
-    NOT_NULL(handler = dlopen("./libasm.so", RTLD_LAZY));
+    NOT_NULL(handler = dlopen("./libasm.so", RTLD_LAZY | RTLD_DEEPBIND | RTLD_NOW));
     LOAD_SYM(my_strlen, "strlen");
     LOAD_SYM(my_strchr, "strchr");
     LOAD_SYM(my_strrchr, "strrchr");
@@ -152,8 +152,8 @@ void assert_strlen(char const *test)
 {
     printf("=============\n");
     printf("\tTesting:  [(%s)]\n", test);
-    int res1 = my_strlen(test);
-    int res2 = strlen(test);
+    size_t res1 = my_strlen(test);
+    size_t res2 = strlen(test);
     if (res2 != res1) {
         printf("\tGot:      [%lu]\n", res1);
         printf("\tExpected: [%lu]\n", res2);
@@ -680,7 +680,7 @@ static const struct funcs FUNCS[] = {
 };
 void chose_specific_test(char *funcname)
 {
-    for (int i = 0; i < sizeof(FUNCS) / sizeof(FUNCS[0]); i++) {
+    for (unsigned int i = 0; i < sizeof(FUNCS) / sizeof(FUNCS[0]); i++) {
         if (strcmp(FUNCS[i].funcname, funcname) == 0) {
             printf("|---------------------------------------|\n"
                    " Running specific test suite for [%s]\n"
@@ -701,7 +701,7 @@ int main(int ac, char **av)
     if (ac == 1)
         run_tests();
     else
-        for (unsigned int i = 1; i < ac; i++)
+        for (int i = 1; i < ac; i++)
             chose_specific_test(av[i]);
     unload_library();
     show_score();
