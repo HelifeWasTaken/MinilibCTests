@@ -214,7 +214,7 @@ void assert_memset(size_t size_to_test)
     my_memset(buf1, c, size_to_test);
     memset(buf2, c, size_to_test);
     printf("=============\n");
-    printf("\tTesting:  [(%p), (%lu)]\n", buf1, size_to_test);
+    printf("\tTesting:  [(%lu)]\n", size_to_test);
     int res1 = memcmp(buf1, buf2, size_to_test);
     if (res1 != 0) {
         printf("\tGot:      [%d]\n", memcmp(buf1, buf2, BUFSIZ));
