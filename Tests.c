@@ -30,6 +30,8 @@ int failure = 0;
 Setups
 */
 
+#define SLEEP_200MS do { usleep(150 * 1000); } while (0)
+
 // Catch SIGSEGV and SIGBUS etc...
 void signal_handler(int signum)
 {
@@ -44,11 +46,13 @@ void signal_handler(int signum)
 #define LOAD_SYM(sym, symname) \
     { \
         printf("---- Loading library symbol: [%s]\n", symname); \
+        SLEEP_200MS; \
         NOT_NULL(sym = dlsym(handler, symname)); \
     }
 
 #define RUN_TEST_SUITE(f, suite_name) \
     do { \
+        SLEEP_200MS; \
         printf("|------------|" \
                " Running test suite for: [%s] " \
                "|------------|\n\n", suite_name); \
@@ -80,14 +84,24 @@ void setup()
 {
     TEST_HEADER;
     printf("--> Setting up tests...\n");
+    SLEEP_200MS;
     printf("--> Setting up printf automatic flush...\n");
+    SLEEP_200MS;
     assert(setvbuf(stdout, NULL, _IONBF, 0) == 0);
     printf("--> Setting up random seed to 42...\n");
+    SLEEP_200MS;
     srand(42);
     printf("--> Setting up signal handler...\n");
-    for (int i = 0; i < 32; i++)
-        if (i != SIGINT)
-            signal(i, signal_handler);
+    signal(SIGSEGV, signal_handler);
+    signal(SIGABRT, signal_handler);
+    signal(SIGTRAP, signal_handler);
+    signal(SIGBUS, signal_handler);
+    signal(SIGILL, signal_handler);
+    signal(SIGFPE, signal_handler);
+    signal(SIGPIPE, signal_handler);
+    signal(SIGSYS, signal_handler);
+
+    SLEEP_200MS;
 }
 
 void unload_library(void)
@@ -145,6 +159,7 @@ void assert_strlen(char const *test)
         success++;
     }
     printf("=============\n\n");
+    SLEEP_200MS;
 }
 
 void assert_strchr(const char *s, int c)
@@ -161,6 +176,7 @@ void assert_strchr(const char *s, int c)
         success++;
     }
     printf("=============\n\n");
+    SLEEP_200MS;
 }
 
 void assert_strrchr(const char *s, int c)
@@ -177,6 +193,7 @@ void assert_strrchr(const char *s, int c)
         success++;
     }
     printf("=============\n\n");
+    SLEEP_200MS;
 }
 
 void assert_memset(size_t size_to_test)
@@ -206,6 +223,7 @@ void assert_memset(size_t size_to_test)
         success++;
     }
     printf("=============\n\n");
+    SLEEP_200MS;
 }
 
 void assert_memcpy(void *right, size_t size, size_t size_to_test)
@@ -228,6 +246,7 @@ void assert_memcpy(void *right, size_t size, size_t size_to_test)
         success++;
     }
     printf("=============\n\n");
+    SLEEP_200MS;
 }
 
 void assert_strcmp(const char *s1, const char *s2)
@@ -244,6 +263,7 @@ void assert_strcmp(const char *s1, const char *s2)
         success++;
     }
     printf("=============\n\n");
+    SLEEP_200MS;
 }
 
 void assert_memmove(size_t size, size_t offset1, size_t offset2)
@@ -305,6 +325,7 @@ void assert_memmove(size_t size, size_t offset1, size_t offset2)
     free(buf2);
     free(buf3);
     free(buf4);
+    SLEEP_200MS;
 }
 
 void assert_strncmp(const char *s1, const char *s2, size_t n)
@@ -322,6 +343,7 @@ void assert_strncmp(const char *s1, const char *s2, size_t n)
         success++;
     }
     printf("=============\n\n");
+    SLEEP_200MS;
 }
 
 void assert_strcasecmp(const char *s1, const char *s2)
@@ -354,6 +376,7 @@ void assert_strstr(const char *s1, const char *s2)
         success++;
     }
     printf("=============\n\n");
+    SLEEP_200MS;
 }
 
 void assert_strpbrk(const char *s1, const char *s2)
@@ -370,6 +393,7 @@ void assert_strpbrk(const char *s1, const char *s2)
         success++;
     }
     printf("=============\n\n");
+    SLEEP_200MS;
 }
 
 void assert_strcspn(const char *s1, const char *s2)
@@ -386,6 +410,7 @@ void assert_strcspn(const char *s1, const char *s2)
         success++;
     }
     printf("=============\n\n");
+    SLEEP_200MS;
 }
 
 /*
@@ -633,8 +658,8 @@ void run_tests()
 }
 
 struct funcs {
-    char *funcname;
     void (*f)(void);
+    char *funcname;
 };
 static const struct funcs FUNCS[] = {
     {tests_strlen, "strlen"},
@@ -657,11 +682,13 @@ void chose_specific_test(char *funcname)
             printf("|---------------------------------------|"
                    " Running specific test suite for [%s]\n" 
                    "|---------------------------------------|\n\n", FUNCS[i].funcname); \
+            SLEEP_200MS;
             FUNCS[i].f();
             return;
         }
     }
     printf("No such test: [%s]!\n", funcname);
+    
 }
 
 int main(int ac, char **av)
