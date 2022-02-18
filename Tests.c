@@ -47,7 +47,10 @@ void signal_handler(int signum)
     { \
         printf("---- Loading library symbol: [%s]\n", symname); \
         SLEEP_200MS; \
-        NOT_NULL(sym = dlsym(handler, symname)); \
+        sym = dlsym(handler, symname); \
+        if (sym == NULL) { \
+            printf("\x1B[31mError loading library symbol\n\e[0m"); \
+        } \
     }
 
 #define RUN_TEST_SUITE(f, suite_name) \
@@ -132,8 +135,8 @@ void load_library(void)
 void show_score()
 {
     TEST_HEADER;
-    printf("Success: [%d]\n", success);
-    printf("Failure: [%d]\n", failure);
+    printf("Success: [\x1B[32m%d\e[0m]\n", success);
+    printf("Failure: [\x1B[31m%d\e[0m]\n", failure);
     printf("Rate: [%f%%]\n", ((float)success / (float)(success + failure)) * 100);
 }
 
@@ -680,7 +683,7 @@ void chose_specific_test(char *funcname)
     for (int i = 0; i < sizeof(FUNCS) / sizeof(FUNCS[0]); i++) {
         if (strcmp(FUNCS[i].funcname, funcname) == 0) {
             printf("|---------------------------------------|"
-                   " Running specific test suite for [%s]\n" 
+                   " Running specific test suite for [%s]\n"
                    "|---------------------------------------|\n\n", FUNCS[i].funcname); \
             SLEEP_200MS;
             FUNCS[i].f();
@@ -688,7 +691,7 @@ void chose_specific_test(char *funcname)
         }
     }
     printf("No such test: [%s]!\n", funcname);
-    
+
 }
 
 int main(int ac, char **av)
