@@ -442,6 +442,7 @@ void tests_strchr(void)
     assert_strchr("hhh", 'h');
     assert_strchr("hhh", '\0');
     assert_strchr("", '\0');
+    assert_strchr("yo", 'c');
 }
 
 void tests_strrchr(void)
