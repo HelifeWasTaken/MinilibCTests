@@ -22,6 +22,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <limits.h>
 
 int success = 0;
 int failure = 0;
@@ -82,6 +83,7 @@ int (*my_strcasecmp)(const char *, const char *) = NULL;
 char *(*my_strstr)(const char *, const char *) = NULL;
 char *(*my_strpbrk)(char const *, char const *) = NULL;
 size_t (*my_strcspn)(char const *, char const *) = NULL;
+int (*my_ffs)(int) = NULL;
 
 void setup()
 {
@@ -129,6 +131,7 @@ void load_library(void)
     LOAD_SYM(my_strstr, "strstr");
     LOAD_SYM(my_strpbrk, "strpbrk");
     LOAD_SYM(my_strcspn, "strcspn");
+    LOAD_SYM(my_ffs, "ffs");
     puts("");
 }
 
@@ -416,6 +419,23 @@ void assert_strcspn(const char *s1, const char *s2)
     SLEEP_200MS;
 }
 
+void assert_ffs(int test)
+{
+    printf("=============\n");
+    printf("\tTesting:  [(%d)]\n", test);
+    int res1 = my_ffs(test);
+    int res2 = ffs(test);
+    if (res2 != res1) {
+        printf("\tGot:      [%d]\n", res1);
+        printf("\tExpected: [%d]\n", res2);
+        failure++;
+    } else {
+        success++;
+    }
+    printf("=============\n\n");
+    SLEEP_200MS;
+}
+
 /*
 
 tests
@@ -645,11 +665,21 @@ void tests_strcspn(void)
     assert_strcspn("", "ab");
 }
 
+void tests_ffs()
+{
+    int tests[] = { -1, -100, -13513, INT_MIN, INT_MIN + 1,
+        0, 1, 2, 10, 60, 100, 10000, INT_MAX - 1, INT_MAX };
+
+    for (int i = 0; i < sizeof(tests) / sizeof(*tests); i++) {
+        assert_ffs(tests[i]);
+    }
+}
+
 void run_tests()
 {
     RUN_TEST_SUITE(tests_strlen, "strlen");
-    RUN_TEST_SUITE(tests_strchr, "strchr");
-    RUN_TEST_SUITE(tests_strrchr, "strrchr");
+    RUN_TEST_SUITE(tests_strchr, "strchr/index");
+    RUN_TEST_SUITE(tests_strrchr, "strrchr/rindex");
     RUN_TEST_SUITE(tests_memset, "memset");
     RUN_TEST_SUITE(tests_memcpy, "memcpy");
     RUN_TEST_SUITE(tests_strcmp, "strcmp");
@@ -659,6 +689,7 @@ void run_tests()
     RUN_TEST_SUITE(tests_strstr, "strstr");
     RUN_TEST_SUITE(tests_strpbrk, "strpbrk");
     RUN_TEST_SUITE(tests_strcspn, "strcspn");
+    RUN_TEST_SUITE(tests_ffs, "ffs");
 }
 
 struct funcs {
@@ -677,8 +708,12 @@ static const struct funcs FUNCS[] = {
     {tests_strcasecmp, "strcasecmp"},
     {tests_strstr, "strstr"},
     {tests_strpbrk, "strpbrk"},
-    {tests_strcspn, "strcspn"}
+    {tests_strcspn, "strcspn"},
+    {tests_strchr, "index"},
+    {tests_strrchr, "rindex"},
+    {tests_ffs, "ffs"}
 };
+
 void chose_specific_test(char *funcname)
 {
     for (unsigned int i = 0; i < sizeof(FUNCS) / sizeof(FUNCS[0]); i++) {
