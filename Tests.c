@@ -14,6 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <string.h>
 #include <stddef.h>
@@ -84,6 +86,8 @@ char *(*my_strstr)(const char *, const char *) = NULL;
 char *(*my_strpbrk)(char const *, char const *) = NULL;
 size_t (*my_strcspn)(char const *, char const *) = NULL;
 int (*my_ffs)(int) = NULL;
+char *(*my_memfrob)(char *, size_t) = NULL;
+char *(*my_strfry)(char *) = NULL;
 
 void setup()
 {
@@ -132,6 +136,8 @@ void load_library(void)
     LOAD_SYM(my_strpbrk, "strpbrk");
     LOAD_SYM(my_strcspn, "strcspn");
     LOAD_SYM(my_ffs, "ffs");
+    LOAD_SYM(my_memfrob, "memfrob");
+    LOAD_SYM(my_strfry, "strfry");
     puts("");
 }
 
@@ -436,6 +442,62 @@ void assert_ffs(int test)
     SLEEP_200MS;
 }
 
+void assert_memfrob(void *ptr, size_t n, size_t real_size)
+{
+    char *buf = malloc(real_size);
+    char *mbuf = malloc(real_size);
+
+    memcpy(buf, ptr, real_size);
+    mempcpy(mbuf, ptr, real_size);
+    printf("=============\n");
+    printf("\tTesting:  [(%lu)]\n",n);
+    char *res1 = my_memfrob(mbuf, n);
+    char *res2 = memfrob(buf, n);
+    if (memcmp(res1, res2, real_size) != 0) {
+        printf("\tGot:      ["); write(1, res1, real_size); printf("]\n");
+        printf("\tExpected: ["); write(1, res2, real_size); printf("]\n");
+        failure++;
+    } else {
+        success++;
+    }
+    printf("=============\n\n");
+    free(buf);
+    SLEEP_200MS;
+}
+
+static int is_anagram(const char *s1, const char *s2)
+{
+    if (strlen(s1) != strlen(s2)) {
+        return 0;
+    }
+    for (size_t i = 0; i < s1[i]; i++) {
+        if (strchr(s2, s1[i]) == NULL) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+void assert_strfry(char *s)
+{
+    printf("=============\n");
+    printf("\tTesting:  [(%s)]\n", s);
+    char *old = strdup(s);
+    char *res1 = my_strfry(old);
+
+    if (is_anagram(res1, s) == 0) {
+        printf("\tExpected: [An anagram result: (%s) -- (%s)]\n", res1, s);
+        failure++;
+    } else if (strcmp(res1, s) == 0 && strlen(s) > 1) {
+        printf("\tExpected: [You should not give back the same result: (%s) -- (%s)]\n", res1, s);
+    } else {
+        success++;
+    }
+    printf("=============\n\n");
+    SLEEP_200MS;
+    free(old);
+}
+
 /*
 
 tests
@@ -675,6 +737,43 @@ void tests_ffs()
     }
 }
 
+void tests_memfrob()
+{
+    assert_memfrob("hello world", 0, 12);
+    assert_memfrob("hello world", 1, 12);
+    assert_memfrob("hello world", 2, 12);
+    assert_memfrob("hello world", 3, 12);
+    assert_memfrob("hello world", 4, 12);
+    assert_memfrob("hello world", 5, 12);
+    assert_memfrob("hello world", 6, 12);
+    assert_memfrob("hello world", 7, 12);
+    assert_memfrob("hello world", 8, 12);
+    assert_memfrob("hello world", 9, 12);
+    assert_memfrob("hello world", 10, 12);
+    assert_memfrob("hello world", 11, 12);
+    assert_memfrob("hello world", 12, 12);
+}
+
+void tests_strfry()
+{
+    char *str = strdup("hello world");
+
+    for (int i = 0; i < 5; i++) {
+        assert_strfry(str);
+    }
+    free(str);
+    str = strdup("");
+    for (int i = 0; i < 3; i++) {
+        assert_strfry(str);
+    }
+    free(str);
+    str = strdup("a");
+    for (int i = 0; i < 3; i++) {
+        assert_strfry(str);
+    }
+    free(str);
+}
+
 void run_tests()
 {
     RUN_TEST_SUITE(tests_strlen, "strlen");
@@ -690,6 +789,8 @@ void run_tests()
     RUN_TEST_SUITE(tests_strpbrk, "strpbrk");
     RUN_TEST_SUITE(tests_strcspn, "strcspn");
     RUN_TEST_SUITE(tests_ffs, "ffs");
+    RUN_TEST_SUITE(tests_memfrob, "memfrob");
+    RUN_TEST_SUITE(tests_strfry, "strfry");
 }
 
 struct funcs {
@@ -711,16 +812,18 @@ static const struct funcs FUNCS[] = {
     {tests_strcspn, "strcspn"},
     {tests_strchr, "index"},
     {tests_strrchr, "rindex"},
-    {tests_ffs, "ffs"}
+    {tests_ffs, "ffs"},
+    {tests_memfrob, "memfrob"},
+    {tests_strfry, "strfry"},
 };
 
 void chose_specific_test(char *funcname)
 {
     for (unsigned int i = 0; i < sizeof(FUNCS) / sizeof(FUNCS[0]); i++) {
         if (strcmp(FUNCS[i].funcname, funcname) == 0) {
-            printf("|---------------------------------------|\n"
+            printf("|--------------------------------------------------------|\n"
                    " Running specific test suite for [%s]\n"
-                   "|---------------------------------------|\n\n", FUNCS[i].funcname); \
+                   "|--------------------------------------------------------|\n\n", FUNCS[i].funcname); \
             SLEEP_200MS;
             FUNCS[i].f();
             return;
